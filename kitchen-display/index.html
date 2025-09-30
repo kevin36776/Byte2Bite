@@ -105,6 +105,38 @@
     <script>
         const apiBaseUrl = 'http://127.0.0.1:5000';
 
+        function createTicket(order) {
+            const ticket = document.createElement('div');
+            ticket.className = `order-ticket status-${order.status.toLowerCase()}`;
+            
+            let itemsHtml = '<ul>';
+            order.items.forEach(item => {
+                itemsHtml += `<li><span>${item.quantity}x</span> ${item.name}</li>`;
+            });
+            itemsHtml += '</ul>';
+
+            let actionsHtml = '';
+            if (order.status === 'Pending') {
+                actionsHtml = `<button class="action-btn btn-prepare" onclick="updateOrderStatus(${order.orderId}, 'Preparing')">Start Preparing</button>`;
+            } else if (order.status === 'Preparing') {
+                actionsHtml = `<button class="action-btn btn-complete" onclick="updateOrderStatus(${order.orderId}, 'Completed')">Food Ready</button>`;
+            }
+
+            ticket.innerHTML = `
+                <div class="order-ticket-header">
+                    <h3>Order #${order.orderId}</h3>
+                    <span>${order.restaurantName}</span>
+                </div>
+                <div class="order-ticket-items">
+                    ${itemsHtml}
+                </div>
+                <div class="ticket-actions">
+                    ${actionsHtml}
+                </div>
+            `;
+            return ticket;
+        }
+
         function fetchAndDisplayOrders() {
             const pendingColumn = document.getElementById('pending-orders');
             const preparingColumn = document.getElementById('preparing-orders');
@@ -112,40 +144,12 @@
             fetch(`${apiBaseUrl}/api/orders/active`)
                 .then(response => response.json())
                 .then(data => {
-                    // Clear both columns before redrawing
                     pendingColumn.innerHTML = '';
                     preparingColumn.innerHTML = '';
 
                     data.forEach(order => {
-                        const ticket = document.createElement('div');
-                        ticket.className = `order-ticket status-${order.status.toLowerCase()}`;
-                        
-                        let itemsHtml = '<ul>';
-                        order.items.forEach(item => {
-                            itemsHtml += `<li><span>${item.quantity}x</span> ${item.name}</li>`;
-                        });
-                        itemsHtml += '</ul>';
-
-                        let actionsHtml = '';
-                        if (order.status === 'Pending') {
-                            actionsHtml = `<button class="action-btn btn-prepare" onclick="updateOrderStatus(${order.orderId}, 'Preparing')">Start Preparing</button>`;
-                        } else if (order.status === 'Preparing') {
-                            actionsHtml = `<button class="action-btn btn-complete" onclick="updateOrderStatus(${order.orderId}, 'Completed')">Food Ready</button>`;
-                        }
-
-                        ticket.innerHTML = `
-                            <div class="order-ticket-header">
-                                <h3>Order #${order.orderId}</h3>
-                            </div>
-                            <div class="order-ticket-items">
-                                ${itemsHtml}
-                            </div>
-                            <div class="ticket-actions">
-                                ${actionsHtml}
-                            </div>
-                        `;
-                        
-                        // Place the ticket in the correct column
+                        const ticket = createTicket(order);
+                        // KDS only cares about Pending and Preparing orders
                         if (order.status === 'Pending') {
                             pendingColumn.appendChild(ticket);
                         } else if (order.status === 'Preparing') {
