@@ -1,0 +1,29 @@
+The Problem
+MySQL could not start because another program was using its default port, #3306. This caused an "Access denied" error in phpMyAdmin.
+
+The Solution (2 Parts)
+Part 1: Move MySQL to a New Port
+
+We told MySQL to use a different, empty port (#3307) so it could start.
+
+In XAMPP, click Config on the MySQL line and open my.ini.
+
+Find the line:
+port = 3306
+
+Change it to:
+port = 3307
+
+Part 2: Tell phpMyAdmin Where MySQL Moved
+
+We updated the phpMyAdmin config so it knew the new port number.
+
+In XAMPP, click Config on the Apache line and open phpMyAdmin (config.inc.php).
+
+Find the line:
+$cfg['Servers'][$i]['host'] = '127.0.0.1';
+
+Add this new line directly below it:
+$cfg['Servers'][$i]['port'] = '3307';
+
+After saving both files and restarting Apache and MySQL, the problem was fixed.
