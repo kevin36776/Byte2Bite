@@ -7,7 +7,7 @@ MySQL could not start because another program was using its default port, #3306.
 The Solution (2 Parts)
 Part 1: Move MySQL to a New Port
 
-told MySQL to use a different, empty port (#3307) so it could start.
+change MySQL to use a different, empty port (#3307) so it could start.
 
 In XAMPP, click Config on the MySQL line and open my.ini.
 
@@ -19,7 +19,7 @@ port = 3307
 
 Part 2: Tell phpMyAdmin Where MySQL Moved
 
-updated the phpMyAdmin config so I knew the new port number.
+updated the phpMyAdmin config so It knows the new port number.
 
 In XAMPP, click Config on the Apache line and open phpMyAdmin (config.inc.php).
 

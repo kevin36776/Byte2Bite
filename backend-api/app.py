@@ -4,15 +4,15 @@ from werkzeug.security import generate_password_hash
 from flask_cors import CORS
 import decimal
 
+#initialize flask object
 app = Flask(__name__)
 CORS(app)
 
-# CORRECTED a typo in the port number here (was 3C07)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@localhost:3307/byte2bite_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# --- Database Models ---
+#database models
 class Restaurants(db.Model):
     __tablename__ = 'Restaurants'
     RestaurantID = db.Column(db.Integer, primary_key=True)
@@ -56,7 +56,7 @@ class OrderItems(db.Model):
     Quantity = db.Column(db.Integer, nullable=False)
     PricePerItem = db.Column(db.Numeric(10, 2), nullable=False)
 
-# --- API Endpoints ---
+#api endpoints
 @app.route('/')
 def hello():
     return "API is running!"
@@ -110,7 +110,7 @@ def place_order():
 
     total_price = 0
     for item in cart_items:
-        # Use a session to get the item, not the class directly
+        #use a session to get the item, not the class directly (for multiple locations)
         menu_item = db.session.get(MenuItems, item['id'])
         if menu_item:
             total_price += menu_item.Price * item['quantity']
@@ -141,7 +141,6 @@ def place_order():
 
 @app.route('/api/orders/active', methods=['GET'])
 def get_active_orders():
-    # UPDATED: Now fetches all orders that are not yet ready for pickup.
     active_orders_query = db.session.query(
         Orders, 
         Restaurants.Name
@@ -187,7 +186,6 @@ def update_order_status(order_id):
     data = request.get_json()
     new_status = data.get('status')
 
-    # UPDATED: All statuses are now valid for updates.
     if new_status not in ['Pending', 'Preparing', 'Completed', 'Ready for Pickup']:
         return jsonify({'message': 'Invalid status update'}), 400
 
