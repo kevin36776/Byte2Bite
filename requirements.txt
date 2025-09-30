@@ -1,5 +1,4 @@
-pip install Flask
-pip install Flask-SQLAlchemy
-pip install PyMySQL
-pip install flask-cors
-pymysql
+Flask>=2.0
+Flask-SQLAlchemy>=2.5
+PyMySQL>=1.0
+flask-cors>=3.0
