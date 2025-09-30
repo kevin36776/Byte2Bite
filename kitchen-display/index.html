@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Display System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #343a40;
+            color: #f8f9fa;
+            margin: 0;
+            padding: 15px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .kds-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        .kds-column {
+            background-color: #495057;
+            border-radius: 8px;
+            padding: 15px;
+            width: 45%;
+            max-width: 500px;
+        }
+        .kds-column h2 {
+            text-align: center;
+            border-bottom: 2px solid #6c757d;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .order-ticket {
+            background-color: #212529;
+            border: 1px solid #6c757d;
+            border-left: 5px solid #ffc107; /* Pending */
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .order-ticket.status-preparing {
+            border-left-color: #007bff; /* Preparing */
+        }
+        .order-ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .order-ticket-header h3 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        .order-ticket-items ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .order-ticket-items li {
+            font-size: 1.1em;
+            padding: 4px 0;
+        }
+        .order-ticket-items li span {
+            font-weight: bold;
+        }
+        .ticket-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        .action-btn {
+            flex-grow: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .btn-prepare { background-color: #007bff; }
+        .btn-complete { background-color: #28a745; }
+    </style>
+</head>
+<body>
+
+    <h1>Kitchen Display</h1>
+    <div class="kds-container">
+        <div class="kds-column">
+            <h2>New Orders</h2>
+            <div id="pending-orders">
+                <!-- Pending order tickets will be loaded here -->
+            </div>
+        </div>
+        <div class="kds-column">
+            <h2>Preparing</h2>
+            <div id="preparing-orders">
+                <!-- Preparing order tickets will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiBaseUrl = 'http://127.0.0.1:5000';
+
+        function fetchAndDisplayOrders() {
+            const pendingColumn = document.getElementById('pending-orders');
+            const preparingColumn = document.getElementById('preparing-orders');
+
+            fetch(`${apiBaseUrl}/api/orders/active`)
+                .then(response => response.json())
+                .then(data => {
+                    // Clear both columns before redrawing
+                    pendingColumn.innerHTML = '';
+                    preparingColumn.innerHTML = '';
+
+                    data.forEach(order => {
+                        const ticket = document.createElement('div');
+                        ticket.className = `order-ticket status-${order.status.toLowerCase()}`;
+                        
+                        let itemsHtml = '<ul>';
+                        order.items.forEach(item => {
+                            itemsHtml += `<li><span>${item.quantity}x</span> ${item.name}</li>`;
+                        });
+                        itemsHtml += '</ul>';
+
+                        let actionsHtml = '';
+                        if (order.status === 'Pending') {
+                            actionsHtml = `<button class="action-btn btn-prepare" onclick="updateOrderStatus(${order.orderId}, 'Preparing')">Start Preparing</button>`;
+                        } else if (order.status === 'Preparing') {
+                            actionsHtml = `<button class="action-btn btn-complete" onclick="updateOrderStatus(${order.orderId}, 'Completed')">Food Ready</button>`;
+                        }
+
+                        ticket.innerHTML = `
+                            <div class="order-ticket-header">
+                                <h3>Order #${order.orderId}</h3>
+                            </div>
+                            <div class="order-ticket-items">
+                                ${itemsHtml}
+                            </div>
+                            <div class="ticket-actions">
+                                ${actionsHtml}
+                            </div>
+                        `;
+                        
+                        // Place the ticket in the correct column
+                        if (order.status === 'Pending') {
+                            pendingColumn.appendChild(ticket);
+                        } else if (order.status === 'Preparing') {
+                            preparingColumn.appendChild(ticket);
+                        }
+                    });
+                })
+                .catch(error => console.error('Error fetching orders:', error));
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            fetch(`${apiBaseUrl}/api/orders/${orderId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                fetchAndDisplayOrders(); // Refresh the display immediately
+            })
+            .catch(error => console.error('Error updating status:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchAndDisplayOrders();
+            setInterval(fetchAndDisplayOrders, 10000); // Refresh every 10 seconds
+        });
+    </script>
+</body>
+</html>
+

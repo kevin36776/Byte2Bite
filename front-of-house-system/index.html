@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOH Order Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e9ecef;
+            color: #333;
+            margin: 0;
+            padding: 15px;
+        }
+        h1 {
+            text-align: center;
+            color: #495057;
+        }
+        #orders-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .order-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .order-card.status-pending { border-left: 5px solid #ffc107; }
+        .order-card.status-preparing { border-left: 5px solid #007bff; }
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .order-card-header h2 {
+            margin: 0;
+            font-size: 1.6em;
+        }
+        .order-card-header .status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 0.9em;
+        }
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-preparing { background-color: #cce5ff; color: #004085; }
+        .order-items ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 15px 0;
+        }
+        .order-items li {
+            padding: 5px 0;
+        }
+        .order-items li span {
+            font-weight: bold;
+        }
+        .order-actions {
+            margin-top: auto;
+            display: flex;
+            gap: 10px;
+        }
+        .action-btn {
+            flex-grow: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .action-btn:hover {
+            opacity: 0.8;
+        }
+        .btn-prepare { background-color: #007bff; }
+        .btn-complete { background-color: #28a745; }
+    </style>
+</head>
+<body>
+
+    <h1>Order Management Dashboard</h1>
+    <div id="orders-dashboard">
+        <!-- Order cards will be loaded here -->
+    </div>
+
+    <script>
+        const apiBaseUrl = 'http://127.0.0.1:5000';
+
+        function fetchAndDisplayOrders() {
+            const dashboard = document.getElementById('orders-dashboard');
+            
+            // We can reuse the KDS endpoint as it shows all pending orders
+            fetch(`${apiBaseUrl}/api/orders/active`)
+                .then(response => response.json())
+                .then(data => {
+                    dashboard.innerHTML = ''; // Clear current view
+
+                    if (data.length === 0) {
+                        dashboard.innerHTML = '<p>No active orders.</p>';
+                        return;
+                    }
+
+                    data.forEach(order => {
+                        const card = document.createElement('div');
+                        card.className = `order-card status-${order.status.toLowerCase()}`;
+                        
+                        let itemsHtml = '<ul>';
+                        order.items.forEach(item => {
+                            itemsHtml += `<li><span>${item.quantity}x</span> ${item.name}</li>`;
+                        });
+                        itemsHtml += '</ul>';
+
+                        card.innerHTML = `
+                            <div class="order-card-header">
+                                <h2>Order #${order.orderId}</h2>
+                                <span class="status status-${order.status.toLowerCase()}">${order.status}</span>
+                            </div>
+                            <div class="order-items">
+                                ${itemsHtml}
+                            </div>
+                            <div class="order-actions">
+                                <button class="action-btn btn-prepare" onclick="updateOrderStatus(${order.orderId}, 'Preparing')">Start Preparing</button>
+                                <button class="action-btn btn-complete" onclick="updateOrderStatus(${order.orderId}, 'Completed')">Mark as Completed</button>
+                            </div>
+                        `;
+                        dashboard.appendChild(card);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching orders:', error);
+                    dashboard.innerHTML = '<p style="color: red;">Could not load orders.</p>';
+                });
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            fetch(`${apiBaseUrl}/api/orders/${orderId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                fetchAndDisplayOrders(); // Refresh the dashboard to show the change
+            })
+            .catch(error => {
+                console.error('Error updating status:', error);
+                alert('Failed to update order status.');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchAndDisplayOrders();
+            setInterval(fetchAndDisplayOrders, 10000); // Refresh every 10 seconds
+        });
+    </script>
+</body>
+</html>
