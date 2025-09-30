@@ -1,0 +1,11 @@
+Ignore the Python virtual environment folder
+venv/
+
+Ignore Python's cache folders
+pycache/
+
+Ignore VS Code specific settings folder
+.vscode/
+
+Ignore common OS files (for Mac users on your team)
+.DS_Store
