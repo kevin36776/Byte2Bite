@@ -7,5 +7,5 @@ pycache/
 Ignore VS Code specific settings folder
 .vscode/
 
-Ignore common OS files (for Mac users on your team)
+Ignore common OS files (for Mac users)
 .DS_Store
