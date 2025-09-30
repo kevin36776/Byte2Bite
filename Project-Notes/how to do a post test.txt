@@ -1,0 +1,16 @@
+add the extension "Thunder client" in vs code
+
+hit new request and change to POST and POST http://127.0.0.1:5000/api/customers
+
+and this is the JSON content
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "password": "securepassword123",
+  "phoneNumber": "555-867-5309"
+}
+
+
+then hit send and it should be successful

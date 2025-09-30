@@ -13,6 +13,14 @@
 2. Start **Apache** and **MySQL** (these are the only two we need).  
 3. Make sure MySQL is running on port **3307** (update Apache and MySQL configs if needed).  CHECK XAMPP SETUP NOTES FILE
 
+
+SETUP DATABASE SCHEMA AND SEED once in phpmyadmin
+1. setup data base called byte2bite_db
+2. within byte2bite_db run the seed.sql query
+should be all green then you did it right.
+
+
+
 ---
 
 ## Step 2: Run the Flask Backend
