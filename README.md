@@ -1,5 +1,3 @@
-# Project README
-
 ## Tech Stack
 
 ### Back-End (API)
