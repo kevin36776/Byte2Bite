@@ -1,178 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Front of House - Order Management</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            color: #343a40;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-        }
-        .dashboard-container {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .dashboard-column {
-            background-color: #ffffff;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            flex-grow: 1;
-            min-width: 300px;
-            max-width: 30%;
-        }
-        .dashboard-column h2 {
-            text-align: center;
-            border-bottom: 2px solid #e9ecef;
-            padding-bottom: 10px;
-            margin-top: 0;
-        }
-        .order-card {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .order-card-header {
-            font-weight: bold;
-            font-size: 1.2em;
-            margin-bottom: 10px;
-        }
-        .order-card-body ul {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 10px 0;
-        }
-        .order-card-footer {
-            margin-top: 15px;
-        }
-        .action-btn {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            font-size: 1em;
-            cursor: pointer;
-        }
-        .btn-pickup { background-color: #28a745; }
-        .status-tag {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 15px;
-            color: white;
-            font-size: 0.9em;
-        }
-        .status-pending { background-color: #ffc107; color: #212529; }
-        .status-preparing { background-color: #007bff; }
-        .status-completed { background-color: #17a2b8; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Byte 2 Bite - Kitchen Display System</title>
+  <style>
+    body {
+      background-color: #1e1e1e;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    h1 {
+      text-align: center;
+      padding: 20px;
+      background-color: #333;
+      margin: 0;
+    }
+    #order-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 60vh;
+    }
+    .order-card {
+      background-color: #2d2d2d;
+      border-left: 10px solid orange;
+      border-radius: 10px;
+      padding: 20px;
+      width: 350px;
+      text-align: left;
+      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+      display: none;
+    }
+    .order-card.active {
+      display: block;
+    }
+    .order-card h3 {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      color: #ffb700;
+    }
+    .order-card ul {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0 0 0;
+    }
+    .order-card ul li {
+      margin: 5px 0;
+    }
+    .controls {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 15px;
+      color: #000;
+      font-weight: bold;
+    }
+    .arrow-btn {
+      background-color: #ffb700;
+      color: #000;
+      font-size: 22px;
+      padding: 6px 15px;
+    }
+    .prep-btn {
+      background-color: #ffb700;
+    }
+    .done-btn {
+      background-color: #4CAF50;
+      color: #fff;
+    }
+    .history-btn {
+      background-color: #ffcc00;
+      color: #000;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 12px 20px;
+      border-radius: 8px;
+      transition: background 0.3s;
+      display: inline-block;
+      margin-top: 25px;
+    }
+    .history-btn:hover {
+      background-color: #ffb700;
+    }
+  </style>
 </head>
 <body>
+  <h1>Byte 2 Bite - Kitchen Display System</h1>
+  <div id="order-container"><p>Loading orders...</p></div>
 
-    <h1>FOH Order Dashboard</h1>
-    <div class="dashboard-container">
-        <div class="dashboard-column">
-            <h2>In Progress</h2>
-            <div id="inprogress-orders">
-                <!-- Pending and Preparing orders will appear here -->
-            </div>
-        </div>
-        <div class="dashboard-column">
-            <h2>Ready to Bag</h2>
-            <div id="completed-orders">
-                <!-- Completed orders will appear here -->
-            </div>
-        </div>
-    </div>
+  <div class="controls">
+    <button class="arrow-btn" onclick="prevOrder()">⬅</button>
+    <button class="prep-btn" onclick="updateStatus('Preparing')">Preparing</button>
+    <button class="done-btn" onclick="updateStatus('Completed')">Complete</button>
+    <button class="arrow-btn" onclick="nextOrder()">➡</button>
+  </div>
 
-    <script>
-        const apiBaseUrl = 'http://127.0.0.1:5000';
+  <a href="history.html" class="history-btn">View Completed Orders</a>
 
-        function createOrderCard(order) {
-            const card = document.createElement('div');
-            card.className = 'order-card';
+  <script>
+    let orders = [];
+    let currentIndex = 0;
 
-            let itemsHtml = '<ul>';
-            order.items.forEach(item => {
-                itemsHtml += `<li>${item.quantity}x ${item.name}</li>`;
-            });
-            itemsHtml += '</ul>';
-            
-            let statusHtml = `<span class="status-tag status-${order.status.toLowerCase()}">${order.status}</span>`;
-            let actionsHtml = '';
+    async function loadOrders() {
+      try {
+        const res = await fetch("http://127.0.0.1:5000/api/orders"); // NOTE: Change the API base URL if running Flask on a different server or port.
+        if (!res.ok) throw new Error("Failed to fetch orders");
+        orders = await res.json();
+        console.log("Orders received from server:", orders);
+        showOrder();
+      } catch (err) {
+        document.getElementById("order-container").innerHTML =
+          "<p style='color:red;'>Error loading orders</p>";
+        console.error(err);
+      }
+    }
 
-            // FOH can mark an order as "Ready for Pickup" only after the kitchen has "Completed" it.
-            if (order.status === 'Completed') {
-                actionsHtml = `<button class="action-btn btn-pickup" onclick="updateOrderStatus(${order.orderId}, 'Ready for Pickup')">Ready for Pickup</button>`;
-            }
+    function showOrder() {
+	  const container = document.getElementById("order-container");
+      container.innerHTML = "";
 
-            card.innerHTML = `
-                <div class="order-card-header">
-                    <span>Order #${order.orderId}</span> - <span>${order.restaurantName}</span>
-                </div>
-                <div class="order-card-body">
-                    ${itemsHtml}
-                </div>
-                <div class="order-card-footer">
-                    ${statusHtml}
-                    ${actionsHtml}
-                </div>
-            `;
-            return card;
-        }
+	  if (!orders || orders.length === 0) {
+	     container.innerHTML = "<p>No active orders</p>";
+         return;
+    }
 
-        function fetchAndDisplayOrders() {
-            const inProgressColumn = document.getElementById('inprogress-orders');
-            const completedColumn = document.getElementById('completed-orders');
+    const order = orders[currentIndex];
 
-            fetch(`${apiBaseUrl}/api/orders/active`)
-                .then(response => response.json())
-                .then(data => {
-                    inProgressColumn.innerHTML = '';
-                    completedColumn.innerHTML = '';
+    // Pick a border color based on status
+    let borderColor = "orange"; // default = Pending
+    if (order.status.toLowerCase() === "preparing") borderColor = "yellow";
+    else if (order.status.toLowerCase() === "completed") borderColor = "limegreen";
 
-                    data.forEach(order => {
-                        const card = createOrderCard(order);
-                        if (order.status === 'Pending' || order.status === 'Preparing') {
-                            inProgressColumn.appendChild(card);
-                        } else if (order.status === 'Completed') {
-                            completedColumn.appendChild(card);
-                        }
-                    });
-                })
-                .catch(error => console.error('Error fetching orders:', error));
-        }
+    const div = document.createElement("div");
+    div.className = "order-card active";
+    div.style.borderLeft = `10px solid ${borderColor}`;
 
-        function updateOrderStatus(orderId, newStatus) {
-            fetch(`${apiBaseUrl}/api/orders/${orderId}/status`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.message);
-                fetchAndDisplayOrders(); // Refresh the display
-            })
-            .catch(error => console.error('Error updating status:', error));
-        }
+    div.innerHTML = `
+      <h3>
+        <span>Order #${order.id}</span>
+        <span>Status: ${order.status}</span>
+      </h3>
+        <p><strong>Customer:</strong> ${order.customer_name}</p>
+      <ul>${order.items.split(",").map(i => `<li>${i.trim()}</li>`).join("")}</ul>
+    `; 
+    container.appendChild(div);
+}
 
-        document.addEventListener('DOMContentLoaded', function() {
-            fetchAndDisplayOrders();
-            setInterval(fetchAndDisplayOrders, 5000); // Refresh faster for FOH
+
+    function nextOrder() {
+      if (orders.length === 0) return;
+      currentIndex = (currentIndex + 1) % orders.length;
+      showOrder();
+    }
+
+    function prevOrder() {
+      if (orders.length === 0) return;
+      currentIndex = (currentIndex - 1 + orders.length) % orders.length;
+      showOrder();
+    }
+
+    async function updateStatus(status) {
+      if (orders.length === 0) return;
+      const id = orders[currentIndex].id;
+
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/api/orders/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status })
         });
-    </script>
+
+        if (!res.ok) throw new Error("Failed to update order status");
+        console.log(`Order ${id} updated to ${status}`);
+
+        if (status === "Completed") {
+          orders.splice(currentIndex, 1);
+          if (currentIndex >= orders.length) currentIndex = 0;
+        } else {
+          orders[currentIndex].status = status;
+        }
+
+        showOrder();
+      } catch (err) {
+        console.error(err);
+        alert("Error updating order status. Check the console for details.");
+      }
+    }
+
+    // Auto-refresh every 5 seconds
+    setInterval(loadOrders, 5000);
+    loadOrders();
+  </script>
 </body>
 </html>
-
