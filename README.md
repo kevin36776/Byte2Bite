@@ -1,12 +1,15 @@
+# Byte2Bite
+
 ## Tech Stack
 
 ### Back-End (API)
-- **Language:** Python  
+- **Language:** Python
 - **Framework:** Flask  
 
 ### Front-End (Websites)
 - **Languages:** HTML, CSS, JavaScript  
 - **Frameworks:** None  
+- **TEST**
 
 ### Database
 - **Type:** SQL  
