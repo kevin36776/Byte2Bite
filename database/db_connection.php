@@ -1,5 +1,5 @@
 <?php
-$servername = "localhost";
+$servername = "localhost"; //Identifying the database
 $username = "root";
 $password = "root";
 $dbname = "byte2bite_db";
@@ -11,5 +11,5 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
   die("Connection failed: " . $conn->connect_error);
 }
-echo "Connected successfully";
+echo "Connected successfully"; //Confrimation message
 ?>
