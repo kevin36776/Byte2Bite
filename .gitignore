@@ -1,6 +1,6 @@
 Ignore the Python virtual environment folder
 venv/
-
+.venv/
 Ignore Python's cache folders
 pycache/
 
