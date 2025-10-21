@@ -13,7 +13,8 @@
 
 ### Database
 - **Type:** SQL  
-- **System:** MySQL (running locally with XAMPP)  
+- **System:** MySQL (running locally with MAMP)
+- **Data** Includes restaurants, menu_items, orders and customers as well as sample data for testing.
 
 ### Development Tools
 - **Code Editor:** Visual Studio Code  
